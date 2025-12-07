@@ -1,6 +1,6 @@
 set -o errexit
 
-npm install
+npm ci --include=dev
+npx prisma generate
 npm run build
 npx prisma migrate deploy
-npx prisma generate
