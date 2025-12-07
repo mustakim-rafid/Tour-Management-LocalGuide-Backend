@@ -1,0 +1,64 @@
+model Tour {
+    id           String    @id @default(uuid())
+    title        String
+    description  String
+    tourFee      Int
+    duration     String
+    meetingPoint String
+    maxGroupSize Int
+    image        String
+    tourDate     DateTime
+    createdAt    DateTime  @default(now())
+    updatedAt    DateTime  @updatedAt
+    guideId      String
+    guide        Guide     @relation(fields: [guideId], references: [id])
+    bookings     Booking[]
+
+    @@map("tours")
+}
+
+model Booking {
+    id            String        @id @default(uuid())
+    status        BookingStatus @default(PENDING)
+    paymentStatus PaymentStatus @default(UNPAID)
+    tourId        String
+    tour          Tour          @relation(fields: [tourId], references: [id])
+    touristId     String
+    tourist       Tourist       @relation(fields: [touristId], references: [id])
+    createdAt     DateTime      @default(now())
+    updatedAt     DateTime      @updatedAt
+    payment       Payment?
+    review        Review?
+
+    @@map("booking")
+}
+
+model Payment {
+    id                 String        @id @default(uuid())
+    bookingId          String        @unique
+    booking            Booking       @relation(fields: [bookingId], references: [id])
+    transactionId      String        @unique
+    amount             Float
+    paymentGatewayData Json?
+    paymentStatus      PaymentStatus @default(UNPAID)
+    createdAt          DateTime      @default(now())
+    updatedAt          DateTime      @updatedAt
+
+    @@map("payments")
+}
+
+model Review {
+    id        String   @id @default(uuid())
+    bookingId String   @unique
+    booking   Booking  @relation(fields: [bookingId], references: [id])
+    touristId String
+    tourist   Tourist  @relation(fields: [touristId], references: [id])
+    guideId   String
+    guide     Guide    @relation(fields: [guideId], references: [id])
+    rating    Float    @default(0.0)
+    comment   String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("reviews")
+}
