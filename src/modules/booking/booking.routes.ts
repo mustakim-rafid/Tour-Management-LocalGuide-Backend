@@ -24,8 +24,13 @@ router.route("/confirm/:id").patch(
 )
 
 router.route("/cancel/:id").patch(
-    checkAuth(UserRole.GUIDE, UserRole.TOURIST),
+    checkAuth(UserRole.GUIDE, UserRole.TOURIST, UserRole.ADMIN),
     bookingController.cancelBooking
+)
+
+router.route("/complete").patch(
+    checkAuth(UserRole.GUIDE),
+    bookingController.completeBooking
 )
 
 export const bookingRoutes = router

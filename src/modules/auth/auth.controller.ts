@@ -3,6 +3,7 @@ import catchAsync from "../../utils/catchAsync";
 import { authService } from "./auth.service";
 import httpStatus from "http-status";
 import sendResponse from "../../utils/sendResponse";
+import { TUserJwtPayload } from "../../types";
 
 const login = catchAsync(async (req: Request, res: Response) => {
   const data = await authService.login(req.body);
@@ -37,34 +38,36 @@ const getMe = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// const refreshToken = catchAsync(async (req: Request, res: Response) => {
-//   const token = req.cookies.refreshToken;
-//   const result = await authService.refreshToken(token);
-//   res.cookie("accessToken", result.accessToken, {
-//     secure: true,
-//     httpOnly: true,
-//     sameSite: "none",
-//     maxAge: 1000 * 60 * 60,
-//   });
-//   sendResponse(res, {
-//     statusCode: httpStatus.OK,
-//     message: "Token refreshed successfully",
-//     success: true,
-//     data: result,
-//   });
-// });
+const changePassword = catchAsync(async (req: Request & { user?: TUserJwtPayload }, res: Response) => {
+  const result = await authService.changePassword(req.user as TUserJwtPayload, req.body.oldPassword, req.body.newPassword)
+    sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: "Password changed successfully",
+    success: true,
+    data: result,
+  });
+})
 
-// const changePassword = catchAsync(async (req: Request, res: Response) => {
-//   const result = await authService.changePassword(req.user, req.body.oldPassword, req.body.newPassword)
-//     sendResponse(res, {
-//     statusCode: httpStatus.OK,
-//     message: "Password changed successfully",
-//     success: true,
-//     data: result,
-//   });
-// })
+const refreshToken = catchAsync(async (req: Request, res: Response) => {
+  const token = req.cookies.refreshToken;
+  const result = await authService.refreshToken(token);
+  res.cookie("accessToken", result.accessToken, {
+    secure: true,
+    httpOnly: true,
+    sameSite: "none",
+    maxAge: 1000 * 60 * 60,
+  });
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: "Token refreshed successfully",
+    success: true,
+    data: result,
+  });
+});
 
 export const authController = {
   login,
-  getMe
+  getMe,
+  changePassword,
+  refreshToken
 };

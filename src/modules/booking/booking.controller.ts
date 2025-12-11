@@ -56,9 +56,22 @@ const cancelBooking = catchAsync(
   }
 );
 
+const completeBooking = catchAsync(
+  async (req: Request & { user?: TUserJwtPayload }, res: Response) => {
+    const result = await bookingService.completeBooking(req.body.bookingIds, req.user as TUserJwtPayload);
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Tour completed successfully",
+      data: result,
+    });
+  }
+);
+
 export const bookingController = {
   createBooking,
   getTouristBookings,
   confirmBooking,
-  cancelBooking
+  cancelBooking,
+  completeBooking
 };

@@ -44,7 +44,7 @@ const tourPayment = async (bookingId: string, user: TUserJwtPayload) => {
       paymentId: booking.payment!.id,
     },
     mode: "payment",
-    success_url: "https://nextjs.org",
+    success_url: `${config.frontend_url}/dashboard/my-trips`,
     cancel_url: "https://codewithharry.com",
   });
 

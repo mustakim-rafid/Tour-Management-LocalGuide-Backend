@@ -35,7 +35,7 @@ router.route("/:id").patch(
 )
 
 router.route("/:id").delete(
-    checkAuth(UserRole.ADMIN, UserRole.GUIDE),
+    checkAuth(UserRole.GUIDE),
     tourController.deleteTour
 )
 

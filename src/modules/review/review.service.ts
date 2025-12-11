@@ -43,7 +43,7 @@ const createReview = async (payload: any, user: TUserJwtPayload) => {
                 id: review.guideId
             },
             data: {
-                avrgRating: averageRating._avg.rating as number
+                avrgRating: averageRating._avg.rating ?? 0
             }
         })
         return review

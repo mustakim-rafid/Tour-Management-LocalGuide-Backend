@@ -120,9 +120,30 @@ const cancelBooking = async (bookingId: string, user: TUserJwtPayload) => {
   return result;
 };
 
+const completeBooking = async (bookingIds: string[], user: TUserJwtPayload) => {
+  const result = await prisma.booking.updateMany({
+    where: {
+      id: {
+        in: bookingIds
+      },
+      tour: {
+        guide: {
+          email: user.email,
+        },
+      },
+    },
+    data: {
+      status: BookingStatus.COMPLETED
+    },
+  });
+
+  return result;
+}
+
 export const bookingService = {
   createBooking,
   getTouristBookings,
   confirmBooking,
   cancelBooking,
+  completeBooking
 };

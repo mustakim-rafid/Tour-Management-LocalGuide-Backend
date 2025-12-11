@@ -5,6 +5,7 @@ import { generateToken, verifyToken } from "../../helper/jwt";
 import config from "../../config";
 import { prisma } from "../../helper/prisma";
 import { UserStatus } from "../../generated/prisma/enums";
+import { TUserJwtPayload } from "../../types";
 
 const login = async (payload: { email: string; password: string }) => {
   const isUserExists = await prisma.user.findUnique({
@@ -78,71 +79,74 @@ const getMe = async (token: string) => {
   return user
 };
 
-// const refreshToken = async (refreshToken: string) => {
-//   if (!refreshToken || refreshToken.length === 0) {
-//     throw new AppError(httpStatus.NOT_FOUND, "Refresh token not found");
-//   }
+const changePassword = async (user: TUserJwtPayload, oldPassword: string, newPassword: string) => {
+  const userData = await prisma.user.findUniqueOrThrow({
+    where: {
+      email: user.email,
+      status: UserStatus.ACTIVE
+    }
+  })
 
-//   let decodedToken
+  const isOldPasswordCorrect = await bcrypt.compare(oldPassword, userData.password)
 
-//   try {
-//     decodedToken = verifyToken(refreshToken, config.refresh_token_secret as string)
-//   } catch (error) {
-//     throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized")
-//   }
+  if (!isOldPasswordCorrect) {
+    throw new AppError(httpStatus.UNAUTHORIZED, "Old password is incorrect")
+  }
 
-//   if (!decodedToken || !decodedToken.email) {
-//     throw new AppError(httpStatus.FORBIDDEN, "Invalid request, Login again");
-//   }
+  const hashPassword = await bcrypt.hash(newPassword, Number(config.bcrypt_salt_round))
 
-//   const userData = await prisma.user.findUniqueOrThrow({
-//     where: {
-//         email: decodedToken.email,
-//         status: "ACTIVE"
-//     }
-//   })
+  const userWithNewPassword = await prisma.user.update({
+    where: {
+      email: user.email,
+      status: UserStatus.ACTIVE
+    },
+    data: {
+      password: hashPassword
+    }
+  })
 
-//   const accessToken = generateToken({
-//     email: userData.email,
-//     role: userData.role
-//   }, config.access_token_secret as string, config.access_token_expiry as string)
+  return userWithNewPassword
+}
 
-//   return {
-//     accessToken,
-//     needPasswordChange: userData.needChangePassword
-//   };
-// };
+const refreshToken = async (refreshToken: string) => {
+  if (!refreshToken || refreshToken.length === 0) {
+    throw new AppError(httpStatus.NOT_FOUND, "Refresh token not found");
+  }
 
-// const changePassword = async (user: TUserJwtPayload, oldPassword: string, newPassword: string) => {
-//   const userData = await prisma.user.findUniqueOrThrow({
-//     where: {
-//       email: user.email,
-//       status: Status.ACTIVE
-//     }
-//   })
+  let decodedToken
 
-//   const isOldPasswordCorrect = await bcrypt.compare(oldPassword, userData.password)
+  try {
+    decodedToken = verifyToken(refreshToken, config.jwt.refresh_token_secret as string)
+  } catch (error) {
+    throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized")
+  }
 
-//   if (!isOldPasswordCorrect) {
-//     throw new AppError(httpStatus.UNAUTHORIZED, "Old password is incorrect")
-//   }
+  if (!decodedToken || !decodedToken.email) {
+    throw new AppError(httpStatus.FORBIDDEN, "Invalid request, Login again");
+  }
 
-//   const hashPassword = await bcrypt.hash(newPassword, Number(config.bcrypt_salt_round))
+  const userData = await prisma.user.findUniqueOrThrow({
+    where: {
+        email: decodedToken.email,
+        status: "ACTIVE"
+    }
+  })
 
-//   const userWithNewPassword = await prisma.user.update({
-//     where: {
-//       email: user.email,
-//       status: Status.ACTIVE
-//     },
-//     data: {
-//       password: hashPassword
-//     }
-//   })
+  const accessToken = generateToken({
+    email: userData.email,
+    role: userData.role
+  }, config.jwt.access_token_secret as string, config.jwt.access_token_expiry as string)
 
-//   return userWithNewPassword
-// }
+  return {
+    accessToken,
+  };
+};
+
+
 
 export const authService = {
   login,
-  getMe
+  getMe,
+  changePassword,
+  refreshToken
 };

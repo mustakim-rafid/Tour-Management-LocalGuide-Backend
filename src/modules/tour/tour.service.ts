@@ -109,6 +109,20 @@ const getAllTours = async (
           profilePhoto: true,
         },
       },
+      bookings: {
+        select: {
+          id: true,
+          status: true,
+          paymentStatus: true,
+          tourist: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -143,6 +157,11 @@ const getTourById = async (tourId: string) => {
             select: {
               rating: true,
               comment: true,
+              tourist: {
+                select: {
+                  name: true,
+                },
+              },
             },
           },
         },
@@ -175,8 +194,8 @@ const getGuideTours = async (user: TUserJwtPayload, status?: BookingStatus) => {
     include: {
       bookings: {
         include: {
-          tourist: true
-        }
+          tourist: true,
+        },
       },
     },
   });
@@ -200,6 +219,14 @@ const updateTour = async (tourId: string, payload: any) => {
 };
 
 const deleteTour = async (tourId: string, user: TUserJwtPayload) => {
+  const hasBookings = await prisma.booking.findFirst({
+    where: { tourId },
+  });
+
+  if (hasBookings) {
+    throw new AppError(409, "Cannot delete tour with active bookings");
+  }
+
   if (user.role === "GUIDE") {
     await prisma.tour.findUniqueOrThrow({
       where: {
