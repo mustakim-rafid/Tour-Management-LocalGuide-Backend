@@ -30,7 +30,7 @@ const createReview = async (payload: any, user: TUserJwtPayload) => {
                 comment: payload.comment
             }
         })
-        const averageRating = await prisma.review.aggregate({
+        const averageRating = await tnx.review.aggregate({
             _avg: {
                 rating: true
             },
