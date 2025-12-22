@@ -193,6 +193,7 @@ const getGuideTours = async (user: TUserJwtPayload, status?: BookingStatus) => {
     },
     include: {
       bookings: {
+        where: status ? { status } : undefined,
         include: {
           tourist: true,
         },

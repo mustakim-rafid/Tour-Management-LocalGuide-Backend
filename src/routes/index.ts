@@ -6,6 +6,7 @@ import { bookingRoutes } from "../modules/booking/booking.routes";
 import { paymentRoutes } from "../modules/payment/payment.routes";
 import { reviewRoutes } from "../modules/review/review.routes";
 import { dashboardRoutes } from "../modules/dashboard/dashboard.routes";
+import { homeRoutes } from "../modules/home/home.routes";
 
 const router = Router();
 
@@ -19,27 +20,31 @@ const moduleRoutes: {
   },
   {
     path: "/auth",
-    route: authRoutes
+    route: authRoutes,
   },
   {
     path: "/tour",
-    route: tourRoutes
+    route: tourRoutes,
   },
   {
     path: "/booking",
-    route: bookingRoutes
+    route: bookingRoutes,
   },
   {
     path: "/payment",
-    route: paymentRoutes
+    route: paymentRoutes,
   },
   {
     path: "/review",
-    route: reviewRoutes
+    route: reviewRoutes,
   },
   {
     path: "/dashboard",
-    route: dashboardRoutes
+    route: dashboardRoutes,
+  },
+  {
+    path: "/home",
+    route: homeRoutes,
   },
 ];
 
